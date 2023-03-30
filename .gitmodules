@@ -1,0 +1,4 @@
+[submodule "env"]
+	path = env
+	url = git@github.com:riscv/riscv-test-env.git
+	branch = priv-1.10
