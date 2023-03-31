@@ -13,7 +13,7 @@ CCFLAGS := -nostdlib -nostartfiles -Wa,-march=rv64imafd -I $(ENV) -T $(ENV)/link
 .phony: gen run
 
 gen:
-	python3 $(ENTRYPOINT) < $(CONFIG) > $(OUTPUT_DIR)/$(TESTNAME).S
+	python3 $(ENTRYPOINT) $(CONFIG) 93 > $(OUTPUT_DIR)/$(TESTNAME).S
 	$(CC) $(CCFLAGS) $(OUTPUT_DIR)/$(TESTNAME).S -o $(OUTPUT_DIR)/$(TESTNAME)
 
 run: gen
