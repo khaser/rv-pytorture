@@ -1,11 +1,11 @@
 #!/usr/bin/env python3.10
+
 import os, sys
 import random
+
+from Abstract import AbstractCommandType
 from Mem import *
 from ALU import *
-
-# cmd_group_shortcodes = { 'xalu': ALUCommand, 'xmem': MemCommand }
-cmd_group_shortcodes = { 'xmem': MemCommand }
 
 class Config:
     def __init__(self, lines):
@@ -15,12 +15,9 @@ class Config:
             return (line.removeprefix(prefix) for line in lines if line.startswith(prefix))
 
         lines = take_prefix(lines, 'torture.generator.')
-        mix_pairs = (tuple(line.strip().split()) for line in take_prefix(lines, 'mix.'))
+        self.mix = dict(tuple(line.strip().split()) for line in take_prefix(lines, 'mix.'))
 
-        self.mix = list((int(w), cmd_group_shortcodes[shortcode]) \
-                         for shortcode, w in mix_pairs if cmd_group_shortcodes.get(shortcode) != None)
-
-        self.data_size = 2**12 # TODO
+        self.data_size = 2**6 # TODO
 
 class TestWriter:
     def __init__(self, commands, config):
@@ -40,15 +37,8 @@ class Generator:
     def __init__(self, config: Config, seed=None):
         self.config = config
 
-    def next_cmd(self):
-        weights, cmd_types = zip(*self.config.mix)
-        return random.choices(cmd_types, weights)[0]
-
     def next_cmd_block(self, n):
-        weights, cmd_types = zip(*self.config.mix)
-        cmds = [cmd_type.random_command()(self.config) for cmd_type in random.choices(cmd_types, weights, k=n)]
-        print(cmds, file=sys.stderr)
-        return cmds
+        return [cmd_type.random_command()(self.config) for cmd_type in AbstractCommandType.choices(self.config, n)]
 
 # TODO: remove random_method static method 
 
@@ -58,7 +48,6 @@ if __name__ == '__main__':
     random.seed(seed)
 
     config = Config(open(sys.argv[1], 'r').readlines())
-    gen = Generator(config)
 
-    # print(gen.next_cmd_block(5), file=sys.stderr)
+    gen = Generator(config)
     print(TestWriter(gen.next_cmd_block(5), config))
