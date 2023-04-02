@@ -10,7 +10,6 @@ from ALU import *
 class Config:
     def __init__(self, lines):
         # TODO: inform about ignored options
-
         def take_prefix(lines, prefix):
             return (line.removeprefix(prefix) for line in lines if line.startswith(prefix))
 
@@ -41,9 +40,7 @@ class Generator:
         return [cmd_type.random_command()(self.config) for cmd_type in AbstractCommandType.choices(self.config, n)]
 
 # TODO: remove random_method static method 
-
 if __name__ == '__main__':
-    print(sys.argv, file=sys.stderr)
     _, config_filename, seed = sys.argv
     random.seed(seed)
 

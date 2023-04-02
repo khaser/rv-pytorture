@@ -3,17 +3,13 @@ from Abstract import *
 class MemCommand(AbstractCommandType): 
     prefix = "xmem"
 
-    @staticmethod
-    def random_command():
-        command_class = random.choice(MemCommand.__subclasses__())
-        return command_class
-
 class StoreCommand(MemCommand):
     def __str__(self):
         return f"sw {self.dest}, {self.addr}, {self.temp}"
 
     def __init__(self, config):
-        self.dest, self.temp = random.sample(regs, 2)
+        self.dest = random_reg()
+        self.temp = random_reg(avoid_zeros=True)
         self.addr = random_addr(config.data_size)
 
 class LoadCommand(MemCommand):
@@ -21,5 +17,5 @@ class LoadCommand(MemCommand):
         return f"lw {self.dest}, {self.addr}"
 
     def __init__(self, config):
-        self.dest, self.addr = random_reg(), random_addr(config.data_size)
+        self.dest, self.addr = random_reg(avoid_zeros=True), random_addr(config.data_size)
 

@@ -6,8 +6,8 @@ CONFIG := default.config
 ENV := env/p
 CCFLAGS := -nostdlib -nostartfiles -Wa,-march=rv64imafd -I $(ENV) -T $(ENV)/link.ld
 
-SEED := 93
-TEST_COUNT := 10
+SEED = 50 # used for first gentest run, after that it is incremented from each gentest
+TEST_COUNT := 100
 
 # NOT USED FOR NIX. TODO: Add shell.nix to repo
 # TOOLCHAIN_PREFIX := riscv-64-none 
@@ -16,8 +16,9 @@ TEST_COUNT := 10
 .phony: gen run clean
 
 define gentest
-	python3 $(ENTRYPOINT) $(CONFIG) $(SEED) > $(TESTPATH).S;\
-	$(CC) $(CCFLAGS) $(TESTPATH).S -o $(TESTPATH);
+	[[ -z "$$SEED" ]] && SEED=$(SEED);\
+	python3 $(ENTRYPOINT) $(CONFIG) $$SEED > $(TESTPATH).S;\
+	$(CC) $(CCFLAGS) $(TESTPATH).S -o $(TESTPATH) &> /dev/null;
 endef
 
 gen: $(OUTPUT_DIR)
@@ -27,14 +28,18 @@ run: gen
 	spike -d $(TESTPATH)
 
 stress: $(OUTPUT_DIR)
-	@for i in $(shell seq 1 $(TEST_COUNT)); do \
+	@SEED=$(SEED);\
+	for i in $(shell seq 1 $(TEST_COUNT)); do \
 		$(call gentest)\
-		spike +signature=$(OUTPUT_DIR)/correct.sig $(TESTPATH); \
+		SEED=$$(($$SEED+1));\
+		spike +signature=$(OUTPUT_DIR)/correct.sig $(TESTPATH) || echo Unexpected tohost; \
 		spike-broken +signature=$(OUTPUT_DIR)/testing.sig $(TESTPATH); \
 		if ( ! diff $(OUTPUT_DIR)/correct.sig $(OUTPUT_DIR)/testing.sig ); then \
-			echo test $$i error; \
-		else\
-			echo test $$i passed; \
+			echo test $$i error, seed $$SEED; \
+			echo Test stored into $(TESTPATH); \
+			break;\
+		else \
+			echo test $$i passed, seed $$SEED; \
 		fi; \
 	done
 
