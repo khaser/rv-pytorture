@@ -11,7 +11,7 @@ class Config:
     def __init__(self, lines):
         # TODO: inform about ignored options
         def take_prefix(lines, prefix):
-            return (line.removeprefix(prefix) for line in lines if line.startswith(prefix))
+            return (line[len(prefix):] for line in lines if line.startswith(prefix))
 
         lines = take_prefix(lines, 'torture.generator.')
         self.mix = dict(tuple(line.strip().split()) for line in take_prefix(lines, 'mix.'))
@@ -31,7 +31,6 @@ class TestWriter:
                 data_section=f'.align 8\ntest_memory: .space {config.data_size}, 0'
                 )
 
-# TODO: use special random for each generator
 class Generator:
     def __init__(self, config: Config, seed=None):
         self.config = config
@@ -39,7 +38,6 @@ class Generator:
     def next_cmd_block(self, n):
         return [cmd_type.random_command()(self.config) for cmd_type in AbstractCommandType.choices(self.config, n)]
 
-# TODO: remove random_method static method 
 if __name__ == '__main__':
     _, config_filename, seed = sys.argv
     random.seed(seed)
