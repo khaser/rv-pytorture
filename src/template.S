@@ -1,17 +1,11 @@
 #include "riscv_test.h"
 
-RVTEST_RV64UF
+RVTEST_RV32U
 RVTEST_CODE_BEGIN
 
 {text_section}
 
-  j test_pass
-
-  test_fail:
-    RVTEST_FAIL
-    
-  test_pass:
-    RVTEST_PASS
+  RVTEST_PASS
 
 RVTEST_CODE_END
 
