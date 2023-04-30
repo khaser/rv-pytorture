@@ -21,6 +21,9 @@ define gentest
 	$(CC) $(CCFLAGS) $(TESTPATH).S -o $(TESTPATH);
 endef
 
+compile: $(TESTPATH).S
+	$(CC) $(CCFLAGS) $(TESTPATH).S -o $(TESTPATH)
+
 gen: $(OUTPUT_DIR)
 	$(call gentest)
 
