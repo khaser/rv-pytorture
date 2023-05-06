@@ -14,11 +14,10 @@ class AbstractCommandType:
         return command_class
 
 
-regs = [f'x{i}' for i in range(32)]
-regs_without_zeros = [f'x{i}' for i in range(1, 32)]
+regs = [f'x{i}' for i in range(1, 32)]
 
 def random_reg(avoid_zeros=False):
-    return random.choice(regs if not avoid_zeros else regs_without_zeros)
+    return random.choice(regs if avoid_zeros else regs + ['x0'])
 
 def random_imm(sz=8):
     bound = 2 ** (sz - 1)

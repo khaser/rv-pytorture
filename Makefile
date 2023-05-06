@@ -27,6 +27,10 @@ define gentest
 	$(CC) $(CCFLAGS) $(SPIKE_COMPILE_DIR)/$(EXE).S -o $(SPIKE_COMPILE_DIR)/$(EXE);
 endef
 
+gentest: | $(SPIKE_COMPILE_DIR)
+	$(call gentest)
+	cat $(SPIKE_COMPILE_DIR)/$(EXE)
+
 stress: | $(SPIKE_COMPILE_DIR)
 	@SEED=$(SEED); \
 	for i in $(shell seq 1 $(TEST_COUNT)); do \
