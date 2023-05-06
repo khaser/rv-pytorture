@@ -35,15 +35,13 @@ stress: | $(SPIKE_COMPILE_DIR)
 		spike --isa=RV32IM +signature=$(SPIKE_COMPILE_DIR)/correct.sig --signature-granularity=4 $(SPIKE_COMPILE_DIR)/$(EXE) || echo Unexpected tohost; \
 		sed s/riscv_test/riscv_macros/g $(SPIKE_COMPILE_DIR)/$(EXE).S > $(OUTPUT_DIR)/$(EXE).S; \
 		$(MAKE) -C $(PROC_DIR) run_rv_torture_test; \
-		tail -n +57 $(SIG) > $(SIG).trim; \
-		if ( ! diff $(SPIKE_COMPILE_DIR)/correct.sig $(SIG).trim); then \
+		if ( ! diff $(SPIKE_COMPILE_DIR)/correct.sig $(SIG)); then \
 			echo test $$i error, seed $$SEED; \
 			break; \
 		else \
 			echo test $$i passed, seed $$SEED; \
 		fi; \
 	done
-
 
 $(SPIKE_COMPILE_DIR): 
 	mkdir $(SPIKE_COMPILE_DIR)
