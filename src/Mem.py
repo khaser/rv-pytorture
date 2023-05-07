@@ -8,9 +8,12 @@ class StoreCommand(MemCommand):
         return f"sw {self.dest}, {self.addr}, {self.temp}"
 
     def __init__(self, config):
-        self.dest = random_reg()
-        self.temp = random_reg(avoid_zeros=True)
-        self.addr = random_addr(config.data_size)
+        while (1):
+            self.dest = random_reg()
+            self.temp = random_reg(avoid_zeros=True)
+            self.addr = random_addr(config.data_size)
+            if (self.dest != self.temp):
+                break
 
 class LoadCommand(MemCommand):
     def __str__(self):
