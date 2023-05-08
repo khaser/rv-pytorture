@@ -1,7 +1,3 @@
-[submodule "env"]
-	path = env
-	url = git@github.com:riscv/riscv-test-env.git
-	branch = priv-1.10
 [submodule "proc"]
 	path = proc
 	url = git@github.com:khaser/scr1.git
