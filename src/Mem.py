@@ -6,6 +6,10 @@ class MemCommand(AbstractCommandType):
 class StoreCommand(MemCommand):
     def __str__(self):
         return f"sw {self.dest}, {self.addr}, {self.temp}"
+        # return f'''
+# auipc {self.temp}, {self.addr}[31:12] + {self.addr}[11]
+# sw {self.dest}, {self.addr}[11:0]({self.temp})
+        # '''
 
     def __init__(self, config):
         while (1):

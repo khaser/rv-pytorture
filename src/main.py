@@ -59,17 +59,17 @@ xreg_init_data:
         return f'.align 8\ntest_memory: .space {config.data_size}, 0'
 
     def __str__(self):
-        text_section = '\n'.join('  ' + cmd.strip() for cmd in str(self.commands).split('\n'))
+        test_section = '\n'.join('  ' + cmd.strip() for cmd in str(self.commands).split('\n'))
         not_dumped_data = self.reg_init_data() 
         dumped_data = '\n'.join([self.test_memory_data(), self.reg_dump_data()])
         return f'''
-#include "riscv_test.h"
+#include "riscv_macros.h"
 
 RVTEST_RV32U
 RVTEST_CODE_BEGIN
 
 {self.reg_init()}
-{text_section}
+test_body:{test_section}
 {self.reg_dump()}
 
 RVTEST_PASS
@@ -140,4 +140,4 @@ if __name__ == '__main__':
 
     config = Config(open(sys.argv[1], 'r').readlines())
 
-    print(TestWriter(BranchGen(config, State(0, 40)), config))
+    print(TestWriter(RootGen(config, State(0, 10)), config))
