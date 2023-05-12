@@ -35,7 +35,8 @@ define run_single
 endef
 
 run: verilated_model | mk_$(TMP_DIR)
-	$(call run_single)
+	@$(call run_single)
+	@cd $(TMP_DIR)/$(PROG)_runinfo; diff rtl.sig correct.sig
 
 run_suite: verilated_model | mk_$(TMP_DIR)
 	$(eval PROGS=$(patsubst $(TMP_DIR)/%.S, %, $(wildcard $(TMP_DIR)/*.S)))
@@ -43,26 +44,14 @@ run_suite: verilated_model | mk_$(TMP_DIR)
 	verilator_coverage -write $(TMP_DIR)/general_coverage.dat $(TMP_DIR)/*/coverage.dat
 	verilator_coverage -rank $(TMP_DIR)/*/coverage.dat > $(TMP_DIR)/general_coverage.rank
 
-stress: | verilated_model
-	@SEED=$(SEED); \
-	for i in $(shell seq 1 $(TEST_COUNT)); do \
-		$(call gentest); \
-		SEED=$$(($$SEED+1)); \
-		$(MAKE) -C $(PROC_DIR) run_rv_torture_test; \
-		$(call run); \
-		if ( ! diff $(OUTPUT_DIR)/correct.sig $(RTL_DIR)/$(EXE).sig ); then \
-			echo test $$i error, seed $$SEED; \
-			break; \
-		else \
-			echo test $$i passed, seed $$SEED; \
-		fi; \
-	done
+get_rank:
+	verilator_coverage -rank $(TMP_DIR)/*/coverage.dat > $(TMP_DIR)/general_coverage.rank
 
 clean: 
 	$(MAKE) -C $(PROC_DIR) clean
 	rm -rf $(TMP_DIR)
 
 mk_$(TMP_DIR): 
-	[ -d $(TMP_DIR) ] || mkdir $(TMP_DIR)
+	@[ -d $(TMP_DIR) ] || mkdir $(TMP_DIR)
 
 .phony: default clean stress verilated_model mk_$(TMP_DIR)

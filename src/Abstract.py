@@ -1,5 +1,24 @@
-import sys
-import random
+import sys, os, random
+
+class State:
+    # [min_addr, max_addr]
+    def __init__(self, min_addr, max_addr):
+        self.min_addr = min_addr
+        self.max_addr = max_addr
+
+class Config:
+    def __init__(self, lines):
+        # TODO: inform about ignored options
+        def take_prefix(lines, prefix):
+            return (line[len(prefix):] for line in lines if line.startswith(prefix))
+
+        lines = take_prefix(lines, 'torture.generator.')
+        self.mix = dict(tuple(line.strip().split()) for line in take_prefix(lines, 'mix.'))
+
+        self.data_size = 2**6
+
+        self.iteract_dir = "generated"
+
 
 class AbstractCommandType:
     @staticmethod
