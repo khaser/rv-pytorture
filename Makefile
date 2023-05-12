@@ -3,36 +3,45 @@ ENTRYPOINT := src/main.py
 EXE := rv_torture
 OUTPUT_DIR := $(PROC_DIR)/sim/tests/$(EXE)
 RTL_DIR := $(PROC_DIR)/build/AHB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0
+TMP_DIR := generated
 
 OPTIONS := $(empty)
 CONFIG := default.config
 
-SEED = 78 # used for first gentest run, after that it is incremented from each gentest
-TEST_COUNT := 100
-
 TOOLCHAIN_PREFIX := riscv64-unknown-elf
 CC := $(TOOLCHAIN_PREFIX)-gcc
+PROG ?= 
+VERBOSE = 0
+
+ifeq ($(VERBOSE), 0)
+	OPTINAL_FD := /dev/null
+else
+	OPTINAL_FD := &1
+endif
 
 default: verilated_model stress
 
 verilated_model:
-	$(MAKE) -C $(PROC_DIR) build_verilator
+	@$(MAKE) -C $(PROC_DIR) build_verilator 2>&1 1>$(OPTINAL_FD)
 
-define run
-	spike -m0x00002000:262144 --pc=0x00002140 --isa=RV32IMC +signature=$(OUTPUT_DIR)/correct.sig --signature-granularity=4 $(RTL_DIR)/$(EXE).elf || echo Unexpected tohost
+define run_single
+	{ cp $(TMP_DIR)/$(PROG).S $(OUTPUT_DIR)/$(EXE).S; $(MAKE) -C $(PROC_DIR) run_rv_torture_test 2>&1 1>$(OPTINAL_FD); } &&\
+	{ [ -d $(TMP_DIR)/$(PROG)_runinfo ] && rm -rf $(TMP_DIR)/$(PROG)_runinfo; };\
+	mkdir $(TMP_DIR)/$(PROG)_runinfo &&\
+	spike -m0x00002000:262144 --pc=0x00002140 --isa=RV32IMC\
+	+signature=$(TMP_DIR)/$(PROG)_runinfo/correct.sig --signature-granularity=4 $(RTL_DIR)/$(EXE).elf &&\
+	mv $(RTL_DIR)/coverage.dat $(TMP_DIR)/$(PROG)_runinfo &&\
+	mv $(RTL_DIR)/$(EXE).sig $(TMP_DIR)/$(PROG)_runinfo/rtl.sig;
 endef
 
-run: 
-	$(call run)
+run: verilated_model | mk_$(TMP_DIR)
+	$(call run_single)
 
-define gentest
-	[[ -z "$$SEED" ]] && SEED=$(SEED);\
-	python3 $(ENTRYPOINT) $(CONFIG) $$SEED > $(OUTPUT_DIR)/$(EXE).S
-endef
-
-gentest:
-	$(call gentest)
-	cat $(OUTPUT_DIR)/$(EXE)
+run_suite: verilated_model | mk_$(TMP_DIR)
+	$(eval PROGS=$(patsubst $(TMP_DIR)/%.S, %, $(wildcard $(TMP_DIR)/*.S)))
+	@$(foreach PROG, $(PROGS), $(call run_single))
+	verilator_coverage -write $(TMP_DIR)/general_coverage.dat $(TMP_DIR)/*/coverage.dat
+	verilator_coverage -rank $(TMP_DIR)/*/coverage.dat > $(TMP_DIR)/general_coverage.rank
 
 stress: | verilated_model
 	@SEED=$(SEED); \
@@ -51,5 +60,9 @@ stress: | verilated_model
 
 clean: 
 	$(MAKE) -C $(PROC_DIR) clean
+	rm -rf $(TMP_DIR)
 
-.phony: default clean stress verilated_model
+mk_$(TMP_DIR): 
+	[ -d $(TMP_DIR) ] || mkdir $(TMP_DIR)
+
+.phony: default clean stress verilated_model mk_$(TMP_DIR)

@@ -9,6 +9,7 @@ pkgs.mkShell {
     sw-toolchain
     spike
     verilator
+    dtc
     python310
     (callPackage /etc/nixos/vim.nix { 
       extraRC = ''
