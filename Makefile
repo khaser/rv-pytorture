@@ -34,24 +34,27 @@ define run_single
 	mv $(RTL_DIR)/$(EXE).sig $(TMP_DIR)/$(PROG)_runinfo/rtl.sig;
 endef
 
-run: verilated_model | mk_$(TMP_DIR)
+run: verilated_model | mk_tmp
 	@$(call run_single)
 	@cd $(TMP_DIR)/$(PROG)_runinfo; diff rtl.sig correct.sig
 
-run_suite: verilated_model | mk_$(TMP_DIR)
+run_suite: verilated_model | mk_tmp
 	$(eval PROGS=$(patsubst $(TMP_DIR)/%.S, %, $(wildcard $(TMP_DIR)/*.S)))
 	@$(foreach PROG, $(PROGS), $(call run_single))
 	verilator_coverage -write $(TMP_DIR)/general_coverage.dat $(TMP_DIR)/*/coverage.dat
 	verilator_coverage -rank $(TMP_DIR)/*/coverage.dat > $(TMP_DIR)/general_coverage.rank
 
 get_rank:
-	verilator_coverage -rank $(TMP_DIR)/*/coverage.dat > $(TMP_DIR)/general_coverage.rank
+	@verilator_coverage -rank $(TMP_DIR)/*/coverage.dat | \
+		sed 's/generated\///' | sed 's/_runinfo\/coverage.dat//' | sed 's/[,"]//g' | tail -n +3
 
-clean: 
-	$(MAKE) -C $(PROC_DIR) clean
+mk_tmp: 
+	[ -d $(TMP_DIR) ] || mkdir $(TMP_DIR)
+
+rm_tmp:
 	rm -rf $(TMP_DIR)
 
-mk_$(TMP_DIR): 
-	@[ -d $(TMP_DIR) ] || mkdir $(TMP_DIR)
+clean: rm_tmp
+	$(MAKE) -C $(PROC_DIR) clean
 
-.phony: default clean stress verilated_model mk_$(TMP_DIR)
+.phony: default clean stress verilated_model get_rank mk_tmp rm_tmp
