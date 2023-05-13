@@ -13,6 +13,7 @@ class Test:
     def __init__(self, config, generator, test_name = None):
         self.gen = generator
         self.config = config
+        self.reg_init_bytes = os.urandom(32)
         if (test_name == None):
             self.name = "unnamed" + str(Test.name)
             Test.name += 1
@@ -20,10 +21,10 @@ class Test:
             self.name = test_name
 
     def __str__(self):
-        return str(TestWriter(self.gen, self.config))
+        return str(TestWriter(self.config, self.gen, self.reg_init_bytes))
     
-    def mutate(self):
-        pass # TODO
+    def mutate_data(self):
+        self.reg_init_bytes = os.urandom(32)
 
     def run(self):
         subprocess.run("make mk_tmp", shell = True)
@@ -36,8 +37,9 @@ class Test:
             exit(0)
  
 class TestSuite:
-    def __init__(self, size, config, state):
-        self.tests = [Test(config, RootGen(config, state)) for _ in range(size)]
+    def __init__(self, size, config):
+        state = config.initial_state
+        self.tests = [Test(config, RootGen(config, config.initial_state)) for _ in range(size)]
         self.total_coverage = None
         self.rank = None
 
@@ -57,16 +59,36 @@ class TestSuite:
             self.total_coverage += covered
             self.rank[test_name] = 10**9 if rank == 0 else rank
 
-    def most_valuable(self, n):
-        return sorted(self.tests, key = lambda test : self.rank[test.name])[:n]
+    def retain_more_valuable(self, n):
+        self.tests = sorted(self.tests, key = lambda test : self.rank[test.name])[:n]
 
 if __name__ == '__main__':
     _, config_filename, seed = sys.argv
     random.seed(seed)
 
     config = Config(open(sys.argv[1], 'r').readlines())
-    state = State(0, 10)
+
+    generations = 10
+    tests_in_generation = 10
+    retain_to_next_gen = 3
+    suite = TestSuite(tests_in_generation, config)
+
+    coverages = []
     
-    suite = TestSuite(10, config, state)
-    suite.run()
-    print([(x.name, suite.rank[x.name]) for x in suite.most_valuable(2)])
+    for generation in range(generations):
+        print(f"Generation {generation}")
+        suite.run()
+        suite.retain_more_valuable(retain_to_next_gen)
+
+        coverages.append(suite.total_coverage)
+
+        for test in suite.tests:
+            test.mutate_data()
+
+        suite.tests.extend(
+                Test(config, RootGen(config, config.initial_state)) 
+                for _ in range(tests_in_generation - retain_to_next_gen)
+            ) 
+    
+    for generation, coverage in enumerate(coverages):
+        print(f"Generation: {generation}, coverage: {coverage}")

@@ -18,6 +18,7 @@ class Config:
         self.data_size = 2**6
 
         self.iteract_dir = "generated"
+        self.initial_state = State(0, 10)
 
 
 class AbstractCommandType:

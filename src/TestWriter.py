@@ -3,59 +3,48 @@ from ALU import *
 from Branch import *
 
 class TestWriter:
-    def __init__(self, commands, config):
+    def __init__(self, config, commands, reg_init_bytes):
         self.commands = commands
         self.config = config
-
-    def reg_init(self):
-        load_regs = '\n'.join(f"  lw x{i}, {4 * i}(x31)" for i in range(32))
-        return f'''
-xreg_init:
-  la x31, xreg_init_data
-{load_regs}
-        '''
+        self.reg_init_data = '\n'.join(f".word 0x{reg_init_bytes[i:i+4].hex()}" for i in range(0, len(reg_init_bytes), 4))
   
-    def reg_dump(self):
-        load_regs = '\n'.join(f"  sw x{i}, {4 * i}(x31)" for i in range(31))
-        return f'''
-xreg_dump:
-  la x31, xreg_dump_data
-{load_regs}
-        '''
-
-    def reg_init_data(self):
-        data = '\n'.join(f".word {hex(random.randint(0, 2**32))}" for i in range(32))
-        return f'''
-xreg_init_data:
-{data}
-'''
     def reg_dump_data(self):
-        return f'.align 8\nxreg_dump_data: .space 32*4, 0'
-
-    def test_memory_data(self):
-        return f'.align 8\ntest_memory: .space {self.config.data_size}, 0'
+        return f''
 
     def __str__(self):
+        load_regs = '\n'.join(f"  lw x{i}, {4 * i}(x31)" for i in range(32))
+        store_regs = '\n'.join(f"  sw x{i}, {4 * i}(x31)" for i in range(31))
+
         test_section = '\n'.join('  ' + cmd.strip() for cmd in str(self.commands).split('\n'))
-        not_dumped_data = self.reg_init_data() 
-        dumped_data = '\n'.join([self.test_memory_data(), self.reg_dump_data()])
+
         return f'''
 #include "riscv_macros.h"
 
 RVTEST_RV32U
 RVTEST_CODE_BEGIN
 
-{self.reg_init()}
+xreg_init:
+la x31, xreg_init_data
+{load_regs}
+
 test_body:{test_section}
-{self.reg_dump()}
+
+xreg_dump:
+la x31, xreg_dump_data
+{store_regs}
 
 RVTEST_PASS
 
 RVTEST_CODE_END
 
 .data
-{not_dumped_data}
+xreg_init_data:
+{self.reg_init_data}
+
 RVTEST_DATA_BEGIN
-{dumped_data}
+.align 8
+test_memory: .space {self.config.data_size}, 0
+.align 8
+xreg_dump_data: .space 32*4, 0
 RVTEST_DATA_END
 '''

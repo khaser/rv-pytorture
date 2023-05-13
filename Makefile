@@ -19,7 +19,7 @@ else
 	OPTINAL_FD := &1
 endif
 
-default: verilated_model stress
+default: run_suite
 
 verilated_model:
 	@$(MAKE) -C $(PROC_DIR) build_verilator 2>&1 1>$(OPTINAL_FD)
@@ -48,13 +48,13 @@ get_rank:
 	@verilator_coverage -rank $(TMP_DIR)/*/coverage.dat | \
 		sed 's/generated\///' | sed 's/_runinfo\/coverage.dat//' | sed 's/[,"]//g' | tail -n +3
 
-mk_tmp: 
-	[ -d $(TMP_DIR) ] || mkdir $(TMP_DIR)
+mk_tmp:
+	@[ -d $(TMP_DIR) ] || mkdir $(TMP_DIR)
 
 rm_tmp:
-	rm -rf $(TMP_DIR)
+	@rm -rf $(TMP_DIR)
 
 clean: rm_tmp
 	$(MAKE) -C $(PROC_DIR) clean
 
-.phony: default clean stress verilated_model get_rank mk_tmp rm_tmp
+.phony: default clean stress verilated_model get_rank rm_tmp mk_tmp
