@@ -6,6 +6,9 @@ class State:
         self.min_addr = min_addr
         self.max_addr = max_addr
 
+    def __len__(self):
+        return self.max_addr - self.min_addr + 1
+
 class Config:
     def __init__(self, lines):
         # TODO: inform about ignored options

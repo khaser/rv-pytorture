@@ -17,6 +17,10 @@ class BranchGen:
         self.config = config
         self.state = state
 
+    def pick_gen(self, state):
+        generator = SeqGen if len(state) < 5 else random.choice([SeqGen, BranchGen])
+        return generator(self.config, state)
+
     def __str__(self):
         j_addr = random.randint(self.state.min_addr + 2, self.state.max_addr - 1)
         label = "if_" + str(self.state.min_addr)
@@ -29,8 +33,8 @@ class BranchGen:
         end{label}:
         '''.format(
                 branch_statement = BranchCommand(label),
-                else_block = SeqGen(self.config, State(self.state.min_addr + 1, j_addr)),
-                if_block = SeqGen(self.config, State(j_addr + 1, self.state.max_addr)),
+                else_block = self.pick_gen(State(self.state.min_addr + 1, j_addr)),
+                if_block = self.pick_gen(State(j_addr + 1, self.state.max_addr)),
                 label = label,
                 )
 
