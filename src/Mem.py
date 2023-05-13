@@ -5,13 +5,10 @@ class MemCommand(AbstractCommandType):
 
 class StoreCommand(MemCommand):
     def __str__(self):
-        return f"sw {self.dest}, {self.addr}, {self.temp}"
-        # return f'''
-# auipc {self.temp}, {self.addr}[31:12] + {self.addr}[11]
-# sw {self.dest}, {self.addr}[11:0]({self.temp})
-        # '''
+        return f"{self.cmd} {self.dest}, {self.addr}, {self.temp}"
 
     def __init__(self, config):
+        self.cmd = random.choice(["sb", "sh", "sw"])
         while (1):
             self.dest = random_reg()
             self.temp = random_reg(avoid_zeros=True)
@@ -21,8 +18,17 @@ class StoreCommand(MemCommand):
 
 class LoadCommand(MemCommand):
     def __str__(self):
-        return f"lw {self.dest}, {self.addr}"
+        return f"{self.cmd} {self.dest}, {self.addr}"
 
     def __init__(self, config):
+        self.cmd = random.choice(["lb", "lh", "lw", "lbu", "lhu"])
         self.dest, self.addr = random_reg(avoid_zeros=True), random_addr(config.data_size)
+
+class SpecialLoad(MemCommand):
+    def __str__(self):
+        return f"{self.cmd} {self.dest}, {self.immediate}"
+
+    def __init__(self, config):
+        self.cmd = random.choice(["lui", "auipc"])
+        self.dest, self.immediate = random_reg(), random_imm(20, False)
 

@@ -48,11 +48,13 @@ get_rank:
 	@verilator_coverage -rank $(TMP_DIR)/*/coverage.dat | \
 		sed 's/generated\///' | sed 's/_runinfo\/coverage.dat//' | sed 's/[,"]//g' | tail -n +3
 
-mk_tmp:
-	@[ -d $(TMP_DIR) ] || mkdir $(TMP_DIR)
+mk_tmp: $(TMP_DIR)
+
+$(TMP_DIR):
+	mkdir $(TMP_DIR)
 
 rm_tmp:
-	@rm -rf $(TMP_DIR)
+	@rm -rf $(TMP_DIR)/*
 
 clean: rm_tmp
 	$(MAKE) -C $(PROC_DIR) clean

@@ -24,13 +24,13 @@ RVTEST_RV32U
 RVTEST_CODE_BEGIN
 
 xreg_init:
-la x31, xreg_init_data
+  la x31, xreg_init_data
 {load_regs}
 
 test_body:{test_section}
 
 xreg_dump:
-la x31, xreg_dump_data
+  la x31, xreg_dump_data
 {store_regs}
 
 RVTEST_PASS

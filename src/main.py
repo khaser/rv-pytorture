@@ -13,7 +13,7 @@ class Test:
     def __init__(self, config, generator, test_name = None):
         self.gen = generator
         self.config = config
-        self.reg_init_bytes = os.urandom(32)
+        self.reg_init_bytes = os.urandom(32 * 4)
         if (test_name == None):
             self.name = "unnamed" + str(Test.name)
             Test.name += 1
@@ -24,10 +24,10 @@ class Test:
         return str(TestWriter(self.config, self.gen, self.reg_init_bytes))
     
     def mutate_data(self):
-        self.reg_init_bytes = os.urandom(32)
+        self.reg_init_bytes = os.urandom(32 * 4)
 
     def run(self):
-        subprocess.run("make mk_tmp", shell = True)
+        subprocess.run("make mk_tmp -s", shell = True)
         filename = os.path.join(self.config.iteract_dir, f"{self.name}.S")
         print(str(self), file=open(filename, "w+"))
 
@@ -89,6 +89,7 @@ if __name__ == '__main__':
                 Test(config, RootGen(config, config.initial_state)) 
                 for _ in range(tests_in_generation - retain_to_next_gen)
             ) 
+
     
     for generation, coverage in enumerate(coverages):
         print(f"Generation: {generation}, coverage: {coverage}")
