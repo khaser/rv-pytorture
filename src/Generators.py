@@ -3,6 +3,7 @@ from ALU import *
 from Branch import *
 from Abstract import Config
 import copy
+from itertools import accumulate
 
 class SeqGen:
     def __init__(self, config: Config, state: State):
@@ -61,18 +62,28 @@ class LoopGen:
                 )
 
 class RootGen:
+    def split(self, tl, tr):
+        k = tr - tl
+        res = []
+        while k != 0:
+            x = random.randint(1, k)
+            k -= x
+            res.append(x)
+        random.shuffle(res)
+        res = list(map(lambda x : tl + x, accumulate(res)))
+        return res
+        
+
     def __init__(self, config: Config, state = None):
         res = []
         self.state = state if state != None else config.initial_state 
-        n = random.randint(1, max((self.state.max_addr - self.state.min_addr) // 2, 1))
+        n = int(abs(random.normalvariate(1, (self.state.max_addr - self.state.min_addr +  1) ** 0.5))) + 1
 
         if (self.state.max_addr - self.state.min_addr < 6):
             self.res = [SeqGen(config, State(self.state.min_addr, self.state.max_addr, self.state.free_regs))]
             return 
 
-        indices = random.sample(range(self.state.min_addr + 1, self.state.max_addr + 1), k=n)
-        indices.extend([self.state.min_addr, self.state.max_addr + 1])
-        indices.sort()
+        indices = self.split(self.state.min_addr, self.state.max_addr + 1)
         for fr, to in zip(indices[:-1], indices[1:]):
             if (to - fr < 6):
                 res.append(SeqGen(config, State(fr, to - 1, self.state.free_regs)))

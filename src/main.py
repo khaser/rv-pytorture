@@ -10,7 +10,7 @@ if __name__ == '__main__':
     _, seed = sys.argv
     random.seed(seed)
 
-    config = Config(RootGen, State(0, 50))
+    config = Config(RootGen, State(0, 100))
 
     generations = 10
     tests_in_generation = 10
