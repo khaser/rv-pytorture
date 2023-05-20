@@ -4,18 +4,22 @@ import os, subprocess
 class Test:
     name = 1
 
+    def _get_name(self):
+        self.name = "unnamed" + f'{Test.name:04}'
+        Test.name += 1
+
     def __init__(self, config, test_name = None):
         self.gen = config.generator
         self.config = config
         self.reg_init_bytes = os.urandom(32 * 4)
         if (test_name == None):
-            self.name = "unnamed" + f'{Test.name:04}'
-            Test.name += 1
+            self._get_name()
         else:
             self.name = test_name
 
     def mutate_data(self):
         self.reg_init_bytes = os.urandom(32 * 4)
+        self._get_name()
 
     def run(self):
         subprocess.run("make mk_tmp -s", shell = True)

@@ -2,9 +2,24 @@ import sys, os, random, subprocess
 
 class State:
     # [min_addr, max_addr]
-    def __init__(self, min_addr, max_addr):
+    regs = [f'x{i}' for i in range(1, 32)]
+
+    def __init__(self, min_addr, max_addr, free_regs = None):
         self.min_addr = min_addr
         self.max_addr = max_addr
+        self.loop_limit = 3
+        self.free_regs = free_regs if free_regs != None else [f'x{i}' for i in range(1, 32)]
+
+    def random_reg(self, free=False, avoid_zeros=False):
+        regs = self.free_regs if free else State.regs
+        return random.choice(regs if avoid_zeros else regs + ['x0'])
+
+    def random_imm(self, sz=8, neg=True):
+        bound = 2 ** (sz - 1)
+        return random.randint(-bound, bound - 1) if neg else random.randint(0, bound * 2 - 1)
+
+    def random_addr(self, data_size=0):
+        return f"test_memory + {random.randint(0, data_size // 8 - 1) * 8}"
 
     def __len__(self):
         return self.max_addr - self.min_addr + 1
@@ -34,20 +49,6 @@ class AbstractCommandType:
     def random_command(cls):
         command_class = random.choice(cls.__subclasses__())
         return command_class
-
-
-regs = [f'x{i}' for i in range(1, 32)]
-
-def random_reg(avoid_zeros=False):
-    return random.choice(regs if avoid_zeros else regs + ['x0'])
-
-def random_imm(sz=8, neg=True):
-    bound = 2 ** (sz - 1)
-    return random.randint(-bound, bound - 1) if neg else random.randint(0, bound * 2 - 1)
-
-
-def random_addr(data_size=0):
-    return f"test_memory + {random.randint(0, data_size // 8 - 1) * 8}"
 
 def parse_rank(cmd):
     rank_run = subprocess.run(cmd, shell = True, stdout = subprocess.PIPE)
