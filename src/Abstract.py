@@ -1,4 +1,4 @@
-import sys, os, random
+import sys, os, random, subprocess
 
 class State:
     # [min_addr, max_addr]
@@ -48,4 +48,12 @@ def random_imm(sz=8, neg=True):
 
 def random_addr(data_size=0):
     return f"test_memory + {random.randint(0, data_size // 8 - 1) * 8}"
+
+def parse_rank(cmd):
+    rank_run = subprocess.run(cmd, shell = True, stdout = subprocess.PIPE)
+    output = rank_run.stdout.decode("utf-8")
+    for test_line in output.strip().split('\n'):
+        covered, rank, unique, test_name = test_line.split()
+        yield int(covered), int(rank), int(unique), test_name
+
 

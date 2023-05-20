@@ -1,4 +1,4 @@
-from Abstract import Config
+from Abstract import Config, parse_rank
 import os, subprocess
 
 class Test:
@@ -8,9 +8,8 @@ class Test:
         self.gen = config.generator
         self.config = config
         self.reg_init_bytes = os.urandom(32 * 4)
-        print("test name", Test.name)
         if (test_name == None):
-            self.name = "unnamed" + str(Test.name)
+            self.name = "unnamed" + f'{Test.name:04}'
             Test.name += 1
         else:
             self.name = test_name
@@ -80,15 +79,10 @@ class TestSuite:
         subprocess.run("make rm_tmp", shell = True)
         for test in self.tests:
             test.run()
-        rank_run = subprocess.run("make get_rank", shell = True, stdout = subprocess.PIPE)
-        output = rank_run.stdout.decode("utf-8")
 
         self.total_coverage = 0
         self.rank = dict()
-        for test_line in output.strip().split('\n'):
-            covered, rank, _, test_name = test_line.split()
-            print(covered, rank, test_name)
-            covered, rank = int(covered), int(rank)
+        for covered, rank, _, test_name in parse_rank("make get_rank"):
             self.total_coverage += covered
             self.rank[test_name] = 10**9 if rank == 0 else rank
 

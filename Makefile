@@ -4,9 +4,9 @@ EXE := rv_torture
 OUTPUT_DIR := $(PROC_DIR)/sim/tests/$(EXE)
 RTL_DIR := $(PROC_DIR)/build/AHB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0
 TMP_DIR := generated
+RUNINFO_DIR := runinfo
 
 OPTIONS := $(empty)
-CONFIG := default.config
 
 TOOLCHAIN_PREFIX := riscv64-unknown-elf
 CC := $(TOOLCHAIN_PREFIX)-gcc
@@ -36,7 +36,8 @@ endef
 
 run: verilated_model | mk_tmp
 	@$(call run_single)
-	@cd $(TMP_DIR)/$(PROG)_runinfo; diff rtl.sig correct.sig
+	@cp -r $(TMP_DIR)/$(PROG)_runinfo $(RUNINFO_DIR)
+	@cd $(RUNINFO_DIR)/$(PROG)_runinfo; diff rtl.sig correct.sig
 
 run_suite: verilated_model | mk_tmp
 	$(eval PROGS=$(patsubst $(TMP_DIR)/%.S, %, $(wildcard $(TMP_DIR)/*.S)))
@@ -48,15 +49,26 @@ get_rank:
 	@verilator_coverage -rank $(TMP_DIR)/*/coverage.dat | \
 		sed 's/generated\///' | sed 's/_runinfo\/coverage.dat//' | sed 's/[,"]//g' | tail -n +3
 
+get_total_rank:
+	@verilator_coverage -rank $(RUNINFO_DIR)/*/coverage.dat | \
+		sed 's/generated\///' | sed 's/_runinfo\/coverage.dat//' | sed 's/[,"]//g' | tail -n +3
+
 mk_tmp: $(TMP_DIR)
 
 $(TMP_DIR):
 	mkdir $(TMP_DIR)
 
+$(RUNINFO_DIR):
+	mkdir $(RUNINFO_DIR)
+
 rm_tmp:
-	@rm -rf $(TMP_DIR)/*
+	@rm -rf $(TMP_DIR)/* 
+
+rm_results:
+	@rm -rf $(RUNINFO_DIR)/*
 
 clean: rm_tmp
 	$(MAKE) -C $(PROC_DIR) clean
+	@rm -rf $(TMP_DIR) $(RUNINFO_DIR)
 
-.phony: default clean stress verilated_model get_rank rm_tmp mk_tmp
+.phony: default clean verilated_model get_rank get_total_rank rm_tmp mk_tmp rm_results
