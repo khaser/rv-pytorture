@@ -39,8 +39,9 @@ class BranchGen:
                 )
 
 class RootGen:
-    def __init__(self, config: Config, state: State):
+    def __init__(self, config: Config):
         res = []
+        state = config.initial_state 
         n = int(abs(random.normalvariate(1, (state.max_addr - state.min_addr +  1) ** 0.5))) + 1
 
         indices = random.sample(range(state.min_addr + 1, state.max_addr + 1), k=n)

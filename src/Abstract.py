@@ -10,18 +10,17 @@ class State:
         return self.max_addr - self.min_addr + 1
 
 class Config:
-    def __init__(self, lines):
-        # TODO: inform about ignored options
-        def take_prefix(lines, prefix):
-            return (line[len(prefix):] for line in lines if line.startswith(prefix))
-
-        lines = take_prefix(lines, 'torture.generator.')
-        self.mix = dict(tuple(line.strip().split()) for line in take_prefix(lines, 'mix.'))
+    def __init__(self, generator, initial_state):
+        self.mix = {
+            'xmem': 50,
+            'xalu': 50,
+        }
 
         self.data_size = 2**6
+        self.initial_state = initial_state
+        self.generator = generator
 
         self.iteract_dir = "generated"
-        self.initial_state = State(0, 50)
 
 
 class AbstractCommandType:
