@@ -6,6 +6,8 @@ import copy
 from itertools import accumulate
 
 class SeqGen:
+    min_sz = 1
+
     def __init__(self, config: Config, state: State):
         self.config = config
         self.state = state
@@ -16,6 +18,8 @@ class SeqGen:
                          for cmd_type in AbstractCommandType.choices(self.config, n))
 
 class BranchGen:
+    min_sz = 4
+
     def __init__(self, config: Config, state: State):
         self.config = config
         self.state = state
@@ -38,6 +42,8 @@ class BranchGen:
                 )
 
 class LoopGen:
+    min_sz = 4
+
     def __init__(self, config: Config, state: State):
         self.config = config
         self.state = state
@@ -57,7 +63,7 @@ class LoopGen:
         '''.format(
                 for_block = RootGen(self.config, new_state),
                 label = "for_" + str(self.state.min_addr),
-                iterations = random.randint(1, 50),
+                iterations = random.randint(1, self.config.max_loop_iterations),
                 loop_counter = loop_counter,
                 )
 
@@ -77,18 +83,17 @@ class RootGen:
     def __init__(self, config: Config, state = None):
         res = []
         self.state = state if state != None else config.initial_state 
-        n = int(abs(random.normalvariate(1, (self.state.max_addr - self.state.min_addr +  1) ** 0.5))) + 1
-
-        if (self.state.max_addr - self.state.min_addr < 6):
-            self.res = [SeqGen(config, State(self.state.min_addr, self.state.max_addr, self.state.free_regs))]
-            return 
 
         indices = self.split(self.state.min_addr, self.state.max_addr + 1)
+
         for fr, to in zip(indices[:-1], indices[1:]):
-            if (to - fr < 6):
+            block_len = to - fr
+            if (block_len < config.only_seq_threshold):
                 res.append(SeqGen(config, State(fr, to - 1, self.state.free_regs)))
             else:
-                gen = random.choice([BranchGen, LoopGen])
+                generators = [BranchGen, LoopGen]
+                fitable_generators = list(filter(lambda Gen : Gen.min_sz <= block_len, generators))
+                gen = random.choice(fitable_generators)
                 res.append(gen(config, State(fr, to - 1, self.state.free_regs)))
         self.res = res
         

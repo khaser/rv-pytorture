@@ -34,12 +34,12 @@ define run_single
 	mv $(RTL_DIR)/$(EXE).sig $(TMP_DIR)/$(PROG)_runinfo/rtl.sig;
 endef
 
-run: verilated_model | mk_tmp
+run: verilated_model | mk_tmp $(RUNINFO_DIR)
 	@$(call run_single)
 	@cp -r $(TMP_DIR)/$(PROG)_runinfo $(RUNINFO_DIR)
 	@cd $(RUNINFO_DIR)/$(PROG)_runinfo; diff rtl.sig correct.sig
 
-run_suite: verilated_model | mk_tmp
+run_suite: verilated_model | mk_tmp $(RUNINFO_DIR)
 	$(eval PROGS=$(patsubst $(TMP_DIR)/%.S, %, $(wildcard $(TMP_DIR)/*.S)))
 	@$(foreach PROG, $(PROGS), $(call run_single))
 	verilator_coverage -write $(TMP_DIR)/general_coverage.dat $(TMP_DIR)/*/coverage.dat

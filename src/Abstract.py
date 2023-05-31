@@ -26,16 +26,27 @@ class State:
 
 class Config:
     def __init__(self, generator, initial_state):
+        self.initial_state = initial_state
+
+        self.iteract_dir = "generated"
+
+        # Control seq command types probability
         self.mix = {
             'xmem': 50,
             'xalu': 50,
         }
 
         self.data_size = 2**6
-        self.initial_state = initial_state
         self.generator = generator
 
-        self.iteract_dir = "generated"
+        # Use only seq generator(without branches and function calls) for small blocks
+        self.only_seq_threshold = 5
+
+        self.max_loop_iterations = 5
+         
+        # TODO:
+        self.max_loop_nesting = 3
+
 
 
 class AbstractCommandType:
