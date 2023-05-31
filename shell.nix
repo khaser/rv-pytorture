@@ -3,7 +3,7 @@ let
   sw-toolchain = import ./toolchain.nix { inherit pkgs; };
 in
 pkgs.mkShell {
-  name = "RISC-V hardware develop";
+  name = "RISC-V";
 
   nativeBuildInputs = with pkgs; [
     sw-toolchain
