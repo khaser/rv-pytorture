@@ -1,4 +1,4 @@
-from Abstract import parse_rank
+from Abstract import parse_rank, random_biased_word
 from Config import Config
 import os, subprocess
 
@@ -11,14 +11,12 @@ class Test:
 
     def __init__(self, generator, test_name = None):
         self.gen = generator
-        self.reg_init_bytes = os.urandom(32 * 4)
-        if (test_name == None):
-            self._get_name()
-        else:
+        self.mutate_data()
+        if (test_name != None):
             self.name = test_name
 
     def mutate_data(self):
-        self.reg_init_bytes = os.urandom(32 * 4)
+        self.reg_init_bytes = '\n'.join(f".word {random_biased_word():#0{8 + 2}x}" for _ in range(32))
         self._get_name()
 
     def run(self):
@@ -32,7 +30,7 @@ class Test:
             exit(0)
 
     def __str__(self):
-        reg_init_data = '\n'.join(f".word 0x{self.reg_init_bytes[i:i+4].hex()}" for i in range(0, len(self.reg_init_bytes), 4))
+        reg_init_data = self.reg_init_bytes
 
         load_regs = '\n'.join(f"  lw x{i}, {4 * i}(x31)" for i in range(32))
         store_regs = '\n'.join(f"  sw x{i}, {4 * i}(x31)" for i in range(31))

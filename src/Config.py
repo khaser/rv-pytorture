@@ -10,7 +10,7 @@ class Config:
     }
 
     test_size = 100
-    data_size = 2**6
+    data_size = 128
 
     # Use only seq generator(without branches and function calls) for small blocks
     only_seq_threshold = 5
