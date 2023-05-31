@@ -5,12 +5,12 @@ class Config:
 
     # Control seq command types probability
     mix = {
-        'xmem': 25,
-        'xalu': 75,
+        'xmem': 50,
+        'xalu': 50,
     }
 
     test_size = 100
-    data_size = 128
+    data_size = 64
 
     # Use only seq generator(without branches and function calls) for small blocks
     only_seq_threshold = 5
