@@ -1,7 +1,13 @@
-from State import State
+import enum
+
+class Arch(enum.Enum):
+    RV32I = 32
+    RV64I = 64
 
 class Config:
     iteract_dir = "generated"
+
+    arch = Arch.RV32I
 
     # Control seq command types probability
     mix = {
@@ -17,6 +23,3 @@ class Config:
 
     max_loop_iterations = 5
     max_loop_nesting = 1
-
-    initial_state = State(0, test_size, max_loop_nesting)
-

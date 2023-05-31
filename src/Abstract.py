@@ -21,24 +21,27 @@ def parse_rank(cmd):
         yield int(covered), int(rank), int(unique), test_name
 
 
-def random_biased_word():
-    value = random.randint(0, 2**32 - 1)
-    small = random.randint(0, 31)
+def random_biased_xlen():
+    xlen = Config.arch.value
+    value = random.randint(0, 2**xlen - 1)
+    small = random.randint(0, xlen - 1)
     s = random.randint(0, 20)
     if s == 0:
         return small
     elif s == 1:
-        return (0x80 + small) << 24 >> 24
+        return (0x80 + small) << (xlen - 8) >> (xlen - 8)
     elif s == 2:
-        return (0x8000 + small) << 16 >> 16
+        return (0x8000 + small) << (xlen - 16) >> (xlen - 16)
     elif s == 3:
-        return (0x800000 + small) << 8 >> 8
+        return (0x800000 + small) << (xlen - 24) >> (xlen - 24)
     elif s == 4:
         return 0x80000000 + small
     elif s == 5:
         return (1 << small)
     elif s == 6:
-        return (1 << 32) - (1 + (1 << small))
+        return (1 << xlen) - (1 + (1 << small))
+    elif s == 7:
+        return value if (xlen == 32) else 2**64 + small
     else:
         return value
 

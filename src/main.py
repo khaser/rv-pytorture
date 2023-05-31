@@ -5,7 +5,7 @@ import sys, random, subprocess
 from Runners import TestSuite, Test
 from Generators import RootGen
 from Abstract import parse_rank
-from Config import Config, State
+from Config import Config
 
 if __name__ == '__main__':
     _, seed = sys.argv

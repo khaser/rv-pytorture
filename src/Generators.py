@@ -130,7 +130,7 @@ class FunctionCallGen:
 class RootGen:
     def __init__(self, state = None):
         self.res = []
-        self.state = state if state != None else Config.initial_state 
+        self.state = state if state != None else State(0, Config.test_size, Config.max_loop_nesting)
 
         indices = self.split(self.state.min_addr, self.state.max_addr + 1)
 

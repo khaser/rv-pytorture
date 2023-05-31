@@ -1,4 +1,5 @@
 import random
+from Config import Config
 from copy import deepcopy
 
 class State:
@@ -21,7 +22,8 @@ class State:
         return random.randint(-bound, bound - 1) if neg else random.randint(0, bound * 2 - 1)
 
     def random_addr(self, data_size=0):
-        return f"test_memory + {random.randint(0, data_size // 8 - 1) * 8}"
+        align = Config.arch.value // 8
+        return f"test_memory + {random.randint(0, data_size // align - 1) * align}"
 
     def random_fun(self):
         suitable = [(func, ra) for func, ra in self.funcs if ra in self.free_regs]

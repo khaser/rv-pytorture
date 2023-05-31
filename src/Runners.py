@@ -1,4 +1,4 @@
-from Abstract import parse_rank, random_biased_word
+from Abstract import parse_rank, random_biased_xlen
 from Config import Config
 import os, subprocess
 
@@ -16,7 +16,9 @@ class Test:
             self.name = test_name
 
     def mutate_data(self):
-        self.reg_init_bytes = '\n'.join(f".word {random_biased_word():#0{8 + 2}x}" for _ in range(32))
+        xlen = Config.arch.value
+        prefix = ".dword" if xlen == 64 else ".word"
+        self.reg_init_bytes = '\n'.join(f"{prefix} {random_biased_xlen():#0{xlen//4 + 2}x}" for _ in range(32))
         self._get_name()
 
     def run(self):
@@ -42,7 +44,7 @@ class Test:
         return f'''
 #include "riscv_macros.h"
 
-RVTEST_RV32U
+{"RVTEST_RV32U" if Config.arch.value == 32 else "RVTEST_RV64U"}
 RVTEST_CODE_BEGIN
 
 xreg_init:
@@ -67,7 +69,7 @@ RVTEST_DATA_BEGIN
 .align 8
 test_memory: .space {Config.data_size}, 0
 .align 8
-xreg_dump_data: .space 32*4, 0
+xreg_dump_data: .space 32*{Config.arch.value // 4}, 0
 RVTEST_DATA_END
 '''
 
