@@ -33,9 +33,10 @@ class Test:
 
     def __str__(self):
         reg_init_data = self.reg_init_bytes
+        xlen = Config.arch.value
 
-        load_regs = '\n'.join(f"  lw x{i}, {4 * i}(x31)" for i in range(32))
-        store_regs = '\n'.join(f"  sw x{i}, {4 * i}(x31)" for i in range(31))
+        load_regs = '\n'.join(f'  {"lw" if xlen == 32 else "ld"} x{i}, {4 * i}(x31)' for i in range(32))
+        store_regs = '\n'.join(f'  {"sw" if xlen == 32 else "sd"} x{i}, {4 * i}(x31)' for i in range(31))
 
         test_text = str(self.gen())
 
@@ -44,7 +45,7 @@ class Test:
         return f'''
 #include "riscv_macros.h"
 
-{"RVTEST_RV32U" if Config.arch.value == 32 else "RVTEST_RV64U"}
+{"RVTEST_RV32U" if xlen == 32 else "RVTEST_RV64U"}
 RVTEST_CODE_BEGIN
 
 xreg_init:
