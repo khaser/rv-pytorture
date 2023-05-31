@@ -4,19 +4,19 @@ import sys, random, subprocess
 
 from Runners import TestSuite, Test
 from Generators import RootGen
-from Abstract import Config, State, parse_rank
+from Abstract import parse_rank
+from Config import Config, State
 
 if __name__ == '__main__':
     _, seed = sys.argv
     random.seed(seed)
 
-    config = Config(RootGen, State(0, 100))
-
     generations = 10
     tests_in_generation = 10
     retain_to_next_gen = 3
+
     subprocess.run("make rm_results -s", shell = True)
-    suite = TestSuite([Test(config) for _ in range(tests_in_generation)])
+    suite = TestSuite([Test(RootGen) for _ in range(tests_in_generation)])
 
     for generation in range(generations):
         print(f"Generation {generation}")
@@ -29,6 +29,6 @@ if __name__ == '__main__':
             test.mutate_data()
 
         suite.tests.extend(
-                Test(config) 
+                Test(RootGen) 
                 for _ in range(tests_in_generation - retain_to_next_gen)
             ) 

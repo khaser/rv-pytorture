@@ -1,4 +1,5 @@
-from Abstract import Config, parse_rank
+from Abstract import parse_rank
+from Config import Config
 import os, subprocess
 
 class Test:
@@ -8,9 +9,8 @@ class Test:
         self.name = "unnamed" + f'{Test.name:04}'
         Test.name += 1
 
-    def __init__(self, config, test_name = None):
-        self.gen = config.generator
-        self.config = config
+    def __init__(self, generator, test_name = None):
+        self.gen = generator
         self.reg_init_bytes = os.urandom(32 * 4)
         if (test_name == None):
             self._get_name()
@@ -23,7 +23,7 @@ class Test:
 
     def run(self):
         subprocess.run("make mk_tmp -s", shell = True)
-        filename = os.path.join(self.config.iteract_dir, f"{self.name}.S")
+        filename = os.path.join(Config.iteract_dir, f"{self.name}.S")
         print(str(self), file=open(filename, "w+"))
 
         res = subprocess.run(f"make PROG={self.name} run", shell = True)
@@ -37,7 +37,7 @@ class Test:
         load_regs = '\n'.join(f"  lw x{i}, {4 * i}(x31)" for i in range(32))
         store_regs = '\n'.join(f"  sw x{i}, {4 * i}(x31)" for i in range(31))
 
-        test_text = str(self.gen(self.config))
+        test_text = str(self.gen())
 
         test_section = '\n'.join('  ' + cmd.strip() for cmd in test_text.split('\n'))
 
@@ -67,7 +67,7 @@ xreg_init_data:
 
 RVTEST_DATA_BEGIN
 .align 8
-test_memory: .space {self.config.data_size}, 0
+test_memory: .space {Config.data_size}, 0
 .align 8
 xreg_dump_data: .space 32*4, 0
 RVTEST_DATA_END
