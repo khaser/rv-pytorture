@@ -27,7 +27,7 @@ verilated_model:
 
 define run_single
 	echo $(PROG) verilator time: 1>$(OPTIONAL_FD) &&\
-	{ cp $(TMP_DIR)/$(PROG).S $(OUTPUT_DIR)/$(EXE).S; time $(MAKE) -C $(PROC_DIR) run_rv_torture_test 2>&1 1>$(OPTIONAL_FD); } 2>$(OPTIONAL_FD) &&\
+	{ cp $(TMP_DIR)/$(PROG).S $(OUTPUT_DIR)/$(EXE).S; time $(MAKE) -C $(PROC_DIR) run_rv_torture_test 2>&1 1>$(OPTIONAL_FD) ; } 2>$(OPTIONAL_FD) &&\
 	{ [ -d $(TMP_DIR)/$(PROG)_runinfo ] && rm -rf $(TMP_DIR)/$(PROG)_runinfo; };\
 	mkdir $(TMP_DIR)/$(PROG)_runinfo &&\
 	echo $(PROG) spike time: 1>$(OPTIONAL_FD) &&\
