@@ -7,7 +7,7 @@ class Arch(enum.Enum):
 class Config:
     iteract_dir = "generated"
 
-    arch = Arch.RV32I
+    arch = Arch.RV64I
 
     # Control seq command types probability
     mix = {

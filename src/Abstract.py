@@ -41,7 +41,7 @@ def random_biased_xlen():
     elif s == 6:
         return (1 << xlen) - (1 + (1 << small))
     elif s == 7:
-        return value if (xlen == 32) else 2**64 + small
+        return value if (xlen == 32) else 2**63 + small
     else:
         return value
 
