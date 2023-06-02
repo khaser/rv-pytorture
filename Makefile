@@ -37,12 +37,12 @@ define run_single
 	mv $(RTL_DIR)/$(EXE).sig $(TMP_DIR)/$(PROG)_runinfo/rtl.sig;
 endef
 
-run: verilated_model | mk_tmp $(RUNINFO_DIR)
+run: verilated_model | $(TMP_DIR) $(RUNINFO_DIR)
 	@$(call run_single)
 	@cp -r $(TMP_DIR)/$(PROG)_runinfo $(RUNINFO_DIR)
 	@cd $(RUNINFO_DIR)/$(PROG)_runinfo; diff rtl.sig correct.sig
 
-run_suite: verilated_model | mk_tmp $(RUNINFO_DIR)
+run_suite: verilated_model | $(TMP_DIR) $(RUNINFO_DIR)
 	$(eval PROGS=$(patsubst $(TMP_DIR)/%.S, %, $(wildcard $(TMP_DIR)/*.S)))
 	@$(foreach PROG, $(PROGS), $(call run_single))
 	verilator_coverage -write $(TMP_DIR)/general_coverage.dat $(TMP_DIR)/*/coverage.dat
@@ -59,8 +59,6 @@ get_total_rank:
 get_coverage: | $(ANN_DIR)
 	@verilator_coverage -annotate $(ANN_DIR) $(RUNINFO_DIR)/*/coverage.dat
 
-mk_tmp: $(TMP_DIR)
-
 $(TMP_DIR):
 	mkdir $(TMP_DIR)
 
@@ -73,11 +71,15 @@ $(ANN_DIR):
 rm_tmp:
 	@rm -rf $(TMP_DIR)/* 
 
+get_tmp:
+	@echo $(TMP_DIR)
+
 rm_results:
 	@rm -rf $(RUNINFO_DIR)/*
+
 
 clean: rm_tmp
 	$(MAKE) -C $(PROC_DIR) clean
 	@rm -rf $(TMP_DIR) $(RUNINFO_DIR) $(ANN_DIR)
 
-.phony: default clean verilated_model get_rank get_total_rank rm_tmp mk_tmp rm_results
+.phony: default clean verilated_model get_rank get_total_rank get_tmp rm_tmp rm_results

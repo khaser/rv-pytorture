@@ -13,14 +13,6 @@ class AbstractCommandType:
         command_class = random.choice(cls.__subclasses__())
         return command_class
 
-def parse_rank(cmd):
-    rank_run = subprocess.run(cmd, shell = True, stdout = subprocess.PIPE)
-    output = rank_run.stdout.decode("utf-8")
-    for test_line in output.strip().split('\n'):
-        covered, rank, unique, test_name = test_line.split()
-        yield int(covered), int(rank), int(unique), test_name
-
-
 def random_biased_xlen():
     xlen = Config.arch.value
     value = random.randint(0, 2**xlen - 1)

@@ -5,8 +5,6 @@ class Arch(enum.Enum):
     RV64I = 64
 
 class Config:
-    iteract_dir = "generated"
-
     arch = Arch.RV32I
 
     # Control seq command types probability
