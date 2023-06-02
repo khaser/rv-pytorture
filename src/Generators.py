@@ -91,12 +91,10 @@ class FunctionDefGen:
 
         return '''
         j end{label}
-
         {label}:
         {function_body}
         jalr x0, {ra_reg}, 0
         end{label}:
-
         {continuation}
         '''.format(
                 ra_reg = ra_reg,
@@ -169,4 +167,4 @@ class RootGen:
         return res
 
     def __str__(self):
-        return '\n\n'.join(str(i) for i in self.res)
+        return '\n'.join(str(i) for i in self.res)

@@ -27,7 +27,7 @@ class LoadCommand(MemCommand):
 
     def __init__(self, state):
         cmds = ["lb", "lh", "lw", "lbu", "lhu"]
-        if Config.arch.value == 32:
+        if Config.arch.value == 64:
             cmds += ["lwu", "ld"]
         self.cmd = random.choice(cmds)
         self.dest, self.addr = state.random_reg(free=True, avoid_zeros=True), state.random_addr(Config.data_size)
