@@ -4,6 +4,7 @@ EXE := rv_torture
 OUTPUT_DIR := $(PROC_DIR)/sim/tests/$(EXE)
 RTL_DIR := $(PROC_DIR)/build/AHB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0
 TMP_DIR := generated
+ANN_DIR := annotated
 RUNINFO_DIR := runinfo
 
 OPTIONS := $(empty)
@@ -14,22 +15,24 @@ PROG ?=
 VERBOSE = 0
 
 ifeq ($(VERBOSE), 0)
-	OPTINAL_FD := /dev/null
+	OPTIONAL_FD := /dev/null
 else
-	OPTINAL_FD := &1
+	OPTIONAL_FD := &1
 endif
 
 default: run_suite
 
 verilated_model:
-	@$(MAKE) -C $(PROC_DIR) build_verilator 2>&1 1>$(OPTINAL_FD)
+	@$(MAKE) -C $(PROC_DIR) build_verilator 2>&1 1>$(OPTIONAL_FD)
 
 define run_single
-	{ cp $(TMP_DIR)/$(PROG).S $(OUTPUT_DIR)/$(EXE).S; $(MAKE) -C $(PROC_DIR) run_rv_torture_test 2>&1 1>$(OPTINAL_FD); } &&\
+	echo $(PROG) verilator time: 1>$(OPTIONAL_FD) &&\
+	{ cp $(TMP_DIR)/$(PROG).S $(OUTPUT_DIR)/$(EXE).S; time $(MAKE) -C $(PROC_DIR) run_rv_torture_test 2>&1 1>$(OPTIONAL_FD); } 2>$(OPTIONAL_FD) &&\
 	{ [ -d $(TMP_DIR)/$(PROG)_runinfo ] && rm -rf $(TMP_DIR)/$(PROG)_runinfo; };\
 	mkdir $(TMP_DIR)/$(PROG)_runinfo &&\
-	spike -m0x00002000:262144 --pc=0x00002140 --isa=RV32IMC\
-	+signature=$(TMP_DIR)/$(PROG)_runinfo/correct.sig --signature-granularity=4 $(RTL_DIR)/$(EXE).elf &&\
+	echo $(PROG) spike time: 1>$(OPTIONAL_FD) &&\
+	{ time spike -m0x00002000:262144 --pc=0x00002140 --isa=RV32IMC \
+	+signature=$(TMP_DIR)/$(PROG)_runinfo/correct.sig --signature-granularity=4 $(RTL_DIR)/$(EXE).elf; } 2>$(OPTIONAL_FD) &&\
 	mv $(RTL_DIR)/coverage.dat $(TMP_DIR)/$(PROG)_runinfo &&\
 	mv $(RTL_DIR)/$(EXE).sig $(TMP_DIR)/$(PROG)_runinfo/rtl.sig;
 endef
@@ -53,6 +56,9 @@ get_total_rank:
 	@verilator_coverage -rank $(RUNINFO_DIR)/*/coverage.dat | \
 		sed 's/generated\///' | sed 's/_runinfo\/coverage.dat//' | sed 's/[,"]//g' | tail -n +3
 
+get_coverage: | $(ANN_DIR)
+	@verilator_coverage -annotate $(ANN_DIR) $(RUNINFO_DIR)/*/coverage.dat
+
 mk_tmp: $(TMP_DIR)
 
 $(TMP_DIR):
@@ -60,6 +66,9 @@ $(TMP_DIR):
 
 $(RUNINFO_DIR):
 	mkdir $(RUNINFO_DIR)
+
+$(ANN_DIR):
+	mkdir $(ANN_DIR)
 
 rm_tmp:
 	@rm -rf $(TMP_DIR)/* 
@@ -69,6 +78,6 @@ rm_results:
 
 clean: rm_tmp
 	$(MAKE) -C $(PROC_DIR) clean
-	@rm -rf $(TMP_DIR) $(RUNINFO_DIR)
+	@rm -rf $(TMP_DIR) $(RUNINFO_DIR) $(ANN_DIR)
 
 .phony: default clean verilated_model get_rank get_total_rank rm_tmp mk_tmp rm_results

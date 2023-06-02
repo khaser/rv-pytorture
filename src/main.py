@@ -32,3 +32,5 @@ if __name__ == '__main__':
                 Test(RootGen) 
                 for _ in range(tests_in_generation - retain_to_next_gen)
             ) 
+
+    subprocess.run("make get_coverage", shell = True)

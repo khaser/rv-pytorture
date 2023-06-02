@@ -15,11 +15,20 @@ class Config:
         'xalu': 50,
     }
 
+    # Control pattern frequency
+    pattern_mix = {
+        'seq': 1,
+        'branch': 1,
+        'loop': 3,
+        'func_def': 1, 
+        'func_call': 3
+    }
+
     test_size = 100
     data_size = 64
 
     # Use only seq generator(without branches and function calls) for small blocks
     only_seq_threshold = 5
 
-    max_loop_iterations = 5
-    max_loop_nesting = 1
+    max_loop_iterations = 50
+    max_loop_nesting = 3

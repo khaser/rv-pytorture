@@ -1,3 +1,5 @@
 generated/**
+failed/**
+annotated/**
 runinfo/**
 .envrc

@@ -6,6 +6,7 @@ from State import State
 from itertools import accumulate
 
 class SeqGen:
+    sname = 'seq'
     min_sz = 1
 
     def __init__(self, state: State):
@@ -18,6 +19,7 @@ class SeqGen:
 
 class BranchGen:
     min_sz = 4
+    sname = 'branch'
 
     def __init__(self, state: State):
         self.state = state
@@ -43,6 +45,7 @@ class BranchGen:
 
 class LoopGen:
     min_sz = 4
+    sname = 'loop'
 
     def __init__(self, state: State):
         self.state = state
@@ -70,6 +73,7 @@ class LoopGen:
 
 class FunctionDefGen:
     min_sz = 4
+    sname = 'func_def'
 
     def __init__(self, state: State):
         self.state = state
@@ -105,6 +109,7 @@ class FunctionDefGen:
 
 class FunctionCallGen:
     min_sz = 2
+    sname = 'func_call'
 
     def __init__(self, state: State):
         self.state = state
@@ -135,7 +140,7 @@ class RootGen:
         for fr, to in zip(indices[:-1], indices[1:]):
             block_state = self.state.copy(min_addr = fr, max_addr = to - 1)
             fitable_generators = self.select_suitable(block_state)
-            gen = random.choice(fitable_generators)
+            gen = random.choices(fitable_generators, k=1, weights=[Config.pattern_mix[gen.sname] for gen in fitable_generators])[0]
             self.res.append(gen(block_state))
 
     def select_suitable(self, state):
