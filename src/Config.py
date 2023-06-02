@@ -22,14 +22,18 @@ class Config:
         'func_call': 3
     }
 
-    test_size = 150
+    test_size = 100
     data_size = 64
 
     # Use only seq generator(without branches and function calls) for small blocks
     only_seq_threshold = 5
 
-    max_loop_iterations = 50
+    max_loop_iterations = 10
     max_loop_nesting = 3
      
     # show all output from 'make run' call if verbose = 1
     verbose = 0
+
+    generations = 100
+    tests_in_generation = 10
+    retain_to_next_gen = 1

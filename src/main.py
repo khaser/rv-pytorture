@@ -11,9 +11,9 @@ if __name__ == '__main__':
     _, seed = sys.argv
     random.seed(seed)
 
-    generations = 10
-    tests_in_generation = 10
-    retain_to_next_gen = 3
+    generations = Config.generations
+    tests_in_generation = Config.tests_in_generation
+    retain_to_next_gen = Config.retain_to_next_gen
 
     proc.clean()
 
