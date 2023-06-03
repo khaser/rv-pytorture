@@ -79,7 +79,7 @@ class FunctionDefGen:
     def __init__(self, state: State):
         ra_reg = state.random_reg(free=True, avoid_zeros=True)
         other_free =  state.free_regs - set([ra_reg])
-        regs_for_func = set(random.sample(other_free, k = random.randint(0, len(other_free))))
+        regs_for_func = set(random.sample(other_free, k = random.randint(1, len(other_free) - 2)))
 
         j_addr = random.randint(state.min_addr + 2, state.max_addr - 1)
         func_name = "fun_" + str(state.min_addr)
@@ -91,7 +91,7 @@ class FunctionDefGen:
             ) 
         cont_state = state.copy(
                 min_addr = j_addr + 1,
-                funcs = state.funcs + [(func_name, ra_reg, state.free_regs - regs_for_func)],
+                funcs = state.funcs + [(func_name, ra_reg, regs_for_func)],
             ) 
 
         self.res = '''
@@ -153,13 +153,17 @@ class RootGen:
         if (block_len < Config.only_seq_threshold):
             return [ SeqGen ]
 
-        generators = [BranchGen, FunctionDefGen]
+        generators = [BranchGen]
 
         assert state.loop_limit >= 0
-        if state.loop_limit != 0:
+        if len(state.free_regs) > 3:
+            generators.append(FunctionDefGen)
+
+        assert state.loop_limit >= 0
+        if len(state.free_regs) > 2 and state.loop_limit != 0:
             generators.append(LoopGen)
         
-        if len(state.free_regs) >= 2 and any(ra in state.free_regs and func_regs <= state.free_regs for _, ra, func_regs in state.funcs) > 0:
+        if len(state.free_regs) >= 3 and any(ra in state.free_regs and func_regs <= state.free_regs for _, ra, func_regs in state.funcs) > 0:
             generators.append(FunctionCallGen)
 
         return [gen for gen in generators if gen.min_sz <= block_len]

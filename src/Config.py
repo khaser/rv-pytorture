@@ -36,4 +36,4 @@ class Config:
 
     generations = 50
     tests_in_generation = 10
-    retain_to_next_gen = 10
+    retain_to_next_gen = 3
