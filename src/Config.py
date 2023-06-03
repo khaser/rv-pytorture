@@ -22,7 +22,7 @@ class Config:
         'func_call': 3
     }
 
-    test_size = 100
+    test_size = 50
     data_size = 64
 
     # Use only seq generator(without branches and function calls) for small blocks
@@ -34,6 +34,6 @@ class Config:
     # show all output from 'make run' call if verbose = 1
     verbose = 0
 
-    generations = 100
+    generations = 50
     tests_in_generation = 10
-    retain_to_next_gen = 1
+    retain_to_next_gen = 10

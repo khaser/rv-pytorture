@@ -10,26 +10,23 @@ class SeqGen:
     min_sz = 1
 
     def __init__(self, state: State):
-        self.state = state
+        n = state.max_addr - state.min_addr + 1
+        self.res = '\n'.join(str(cmd_type.random_command()(state))
+                         for cmd_type in AbstractCommandType.choices(n))
 
     def __str__(self):
-        n = self.state.max_addr - self.state.min_addr + 1
-        return '\n'.join(str(cmd_type.random_command()(self.state))
-                         for cmd_type in AbstractCommandType.choices(n))
+        return self.res
 
 class BranchGen:
     min_sz = 4
     sname = 'branch'
 
     def __init__(self, state: State):
-        self.state = state
-
-    def __str__(self):
-        j_addr = random.randint(self.state.min_addr + 2, self.state.max_addr - 1)
-        label = "if_" + str(self.state.min_addr)
-        else_state = self.state.copy(min_addr = self.state.min_addr + 1, max_addr = j_addr - 1)
-        if_state = self.state.copy(min_addr = j_addr + 1)
-        return '''
+        j_addr = random.randint(state.min_addr + 2, state.max_addr - 1)
+        label = "if_" + str(state.min_addr)
+        else_state = state.copy(min_addr = state.min_addr + 1, max_addr = j_addr - 1)
+        if_state = state.copy(min_addr = j_addr + 1)
+        self.res = '''
         {branch_statement}
         {else_block}
         j end{label} 
@@ -37,28 +34,28 @@ class BranchGen:
         {if_block}
         end{label}:
         '''.format(
-                branch_statement = BranchCommand(label, self.state),
+                branch_statement = BranchCommand(label, state),
                 else_block = RootGen(else_state),
                 if_block = RootGen(if_state),
                 label = label,
                 )
+
+    def __str__(self):
+        return self.res
 
 class LoopGen:
     min_sz = 4
     sname = 'loop'
 
     def __init__(self, state: State):
-        self.state = state
-
-    def __str__(self):
-        loop_counter_reg = self.state.random_reg(free=True, avoid_zeros=True)
-        new_state = self.state.copy(
-                min_addr = self.state.min_addr + 1, 
-                loop_limit = self.state.loop_limit - 1,
-                free_regs = [x for x in self.state.free_regs if x != loop_counter_reg],
+        loop_counter_reg = state.random_reg(free=True, avoid_zeros=True)
+        new_state = state.copy(
+                min_addr = state.min_addr + 1, 
+                loop_limit = state.loop_limit - 1,
+                free_regs = [x for x in state.free_regs if x != loop_counter_reg],
             )
 
-        return '''
+        self.res = '''
         addi {loop_counter_reg}, x0, {iterations}
         {label}:
         {for_block}
@@ -66,34 +63,34 @@ class LoopGen:
         bnez {loop_counter_reg}, {label}
         '''.format(
                 for_block = RootGen(new_state),
-                label = "for_" + str(self.state.min_addr),
+                label = "for_" + str(state.min_addr),
                 iterations = random.randint(1, Config.max_loop_iterations),
                 loop_counter_reg = loop_counter_reg,
                 )
+
+    def __str__(self):
+        return self.res
 
 class FunctionDefGen:
     min_sz = 4
     sname = 'func_def'
 
     def __init__(self, state: State):
-        self.state = state
+        ra_reg = state.random_reg(free=True, avoid_zeros=True)
+        j_addr = random.randint(state.min_addr + 2, state.max_addr - 1)
+        func_name = "fun_" + str(state.min_addr)
 
-    def __str__(self):
-        ra_reg = self.state.random_reg(free=True, avoid_zeros=True)
-        j_addr = random.randint(self.state.min_addr + 2, self.state.max_addr - 1)
-        func_name = "fun_" + str(self.state.min_addr)
-
-        fun_state = self.state.copy(
-                min_addr = self.state.min_addr + 1,
+        fun_state = state.copy(
+                min_addr = state.min_addr + 1,
                 max_addr = j_addr - 1,
-                free_regs = [x for x in self.state.free_regs if x != ra_reg],
+                free_regs = [x for x in state.free_regs if x != ra_reg],
             ) 
-        cont_state = self.state.copy(
+        cont_state = state.copy(
                 min_addr = j_addr + 1,
-                funcs = self.state.funcs + [(func_name, ra_reg)],
+                funcs = state.funcs + [(func_name, ra_reg)],
             ) 
 
-        return '''
+        self.res = '''
         j end{label}
         {label}:
         {function_body}
@@ -107,28 +104,31 @@ class FunctionDefGen:
                 function_body = RootGen(fun_state),
             )
 
+    def __str__(self):
+        return self.res
+
 class FunctionCallGen:
     min_sz = 2
     sname = 'func_call'
 
     def __init__(self, state: State):
-        self.state = state
+        fun_label, ra_reg = state.random_fun()
 
-    def __str__(self):
-        fun_label, ra_reg = self.state.random_fun()
+        state.free_regs.remove(ra_reg)
+        tmp_reg = state.random_reg(free=True, avoid_zeros=True)
+        state.free_regs.append(ra_reg)
 
-        self.state.free_regs.remove(ra_reg)
-        tmp_reg = self.state.random_reg(free=True, avoid_zeros=True)
-        self.state.free_regs.append(ra_reg)
-
-        cont_state = self.state.copy(min_addr = self.state.min_addr + 2)
+        cont_state = state.copy(min_addr = state.min_addr + 2)
         continuation = RootGen(cont_state)
 
-        return f'''
+        self.res = f'''
             la {tmp_reg}, {fun_label}
             jalr {ra_reg}, {tmp_reg}, 0
             {continuation}
         '''
+
+    def __str__(self):
+        return self.res
 
 class RootGen:
     def __init__(self, state = None):
