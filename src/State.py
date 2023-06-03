@@ -4,18 +4,18 @@ from copy import deepcopy
 
 class State:
     # [min_addr, max_addr]
-    regs = [f'x{i}' for i in range(1, 32)]
+    regs = set([f'x{i}' for i in range(1, 32)])
 
     def __init__(self, min_addr, max_addr, loop_limit, free_regs = None, funcs = []):
         self.min_addr = min_addr
         self.max_addr = max_addr
         self.loop_limit = loop_limit
-        self.free_regs = free_regs if free_regs != None else [f'x{i}' for i in range(1, 32)]
+        self.free_regs = free_regs if free_regs != None else State.regs
         self.funcs = funcs
 
     def random_reg(self, free=False, avoid_zeros=False):
         regs = self.free_regs if free else State.regs
-        return random.choice(regs if avoid_zeros else regs + ['x0'])
+        return random.choice(list(regs if avoid_zeros else regs | set(['x0'])))
 
     def random_imm(self, sz=8, neg=True):
         bound = 2 ** (sz - 1)
@@ -26,7 +26,7 @@ class State:
         return f"test_memory + {random.randint(0, data_size // align - 1) * align}"
 
     def random_fun(self):
-        suitable = [(func, ra) for func, ra in self.funcs if ra in self.free_regs]
+        suitable = [(func, ra) for func, ra, func_regs in self.funcs if ra in self.free_regs and func_regs <= self.free_regs]
         return random.choice(suitable)
 
     # TODO: rewrite to reflections?

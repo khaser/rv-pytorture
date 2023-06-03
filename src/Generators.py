@@ -4,6 +4,7 @@ from Branch import *
 from Config import Config
 from State import State
 from itertools import accumulate
+import random
 
 class SeqGen:
     sname = 'seq'
@@ -52,7 +53,7 @@ class LoopGen:
         new_state = state.copy(
                 min_addr = state.min_addr + 1, 
                 loop_limit = state.loop_limit - 1,
-                free_regs = [x for x in state.free_regs if x != loop_counter_reg],
+                free_regs = state.free_regs - set([loop_counter_reg])
             )
 
         self.res = '''
@@ -77,17 +78,20 @@ class FunctionDefGen:
 
     def __init__(self, state: State):
         ra_reg = state.random_reg(free=True, avoid_zeros=True)
+        other_free =  state.free_regs - set([ra_reg])
+        regs_for_func = set(random.sample(other_free, k = random.randint(0, len(other_free))))
+
         j_addr = random.randint(state.min_addr + 2, state.max_addr - 1)
         func_name = "fun_" + str(state.min_addr)
 
         fun_state = state.copy(
                 min_addr = state.min_addr + 1,
                 max_addr = j_addr - 1,
-                free_regs = [x for x in state.free_regs if x != ra_reg],
+                free_regs = regs_for_func,
             ) 
         cont_state = state.copy(
                 min_addr = j_addr + 1,
-                funcs = state.funcs + [(func_name, ra_reg)],
+                funcs = state.funcs + [(func_name, ra_reg, state.free_regs - regs_for_func)],
             ) 
 
         self.res = '''
@@ -116,7 +120,7 @@ class FunctionCallGen:
 
         state.free_regs.remove(ra_reg)
         tmp_reg = state.random_reg(free=True, avoid_zeros=True)
-        state.free_regs.append(ra_reg)
+        state.free_regs.add(ra_reg)
 
         cont_state = state.copy(min_addr = state.min_addr + 2)
         continuation = RootGen(cont_state)
@@ -155,7 +159,7 @@ class RootGen:
         if state.loop_limit != 0:
             generators.append(LoopGen)
         
-        if len(state.free_regs) >= 2 and any(ra in state.free_regs for _, ra in state.funcs) > 0:
+        if len(state.free_regs) >= 2 and any(ra in state.free_regs and func_regs <= state.free_regs for _, ra, func_regs in state.funcs) > 0:
             generators.append(FunctionCallGen)
 
         return [gen for gen in generators if gen.min_sz <= block_len]
