@@ -5,12 +5,8 @@ import ProcDriver as proc
 class Test:
     name = 1
 
-    def _get_name(self):
-        self.name = "unnamed" + f'{Test.name:04}'
-        Test.name += 1
-
     def __init__(self, generator, test_name = None):
-        self.gen = generator
+        self.gen = generator()
         self.mutate_data()
         if (test_name != None):
             self.name = test_name
@@ -20,6 +16,10 @@ class Test:
         prefix = ".dword" if xlen == 64 else ".word"
         self.reg_init_bytes = '\n'.join(f"{prefix} {random_biased_xlen():#0{xlen//4 + 2}x}" for _ in range(32))
         self._get_name()
+
+    def _get_name(self):
+        self.name = "unnamed" + f'{Test.name:04}'
+        Test.name += 1
 
     def run(self):
         proc.run_test(self.name, str(self))
@@ -31,7 +31,7 @@ class Test:
         load_regs = '\n'.join(f'  {"lw" if xlen == 32 else "ld"} x{i}, {4 * i}(x31)' for i in range(32))
         store_regs = '\n'.join(f'  {"sw" if xlen == 32 else "sd"} x{i}, {4 * i}(x31)' for i in range(31))
 
-        test_text = str(self.gen())
+        test_text = str(self.gen)
 
         test_section = '\n'.join('  ' + cmd.strip() for cmd in test_text.split('\n'))
 

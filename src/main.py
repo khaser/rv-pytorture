@@ -24,10 +24,15 @@ if __name__ == '__main__':
         suite.run()
         suite.retain_more_valuable(retain_to_next_gen)
 
+
         print(proc.get_total_rank())
+
+        print("Before: ", [tst.name for tst in suite.tests])
 
         for test in suite.tests:
             test.mutate_data()
+
+        print("After: ", [tst.name for tst in suite.tests])
 
         suite.tests.extend(
                 Test(RootGen) 

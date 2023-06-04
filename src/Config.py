@@ -22,7 +22,7 @@ class Config:
         'func_call': 3
     }
 
-    test_size = 50
+    test_size = 100
     data_size = 64
 
     # Use only seq generator(without branches and function calls) for small blocks
