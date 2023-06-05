@@ -30,10 +30,3 @@ class Config:
 
     max_loop_iterations = 10
     max_loop_nesting = 3
-     
-    # show all output from 'make run' call if verbose = 1
-    verbose = 0
-
-    generations = 50
-    tests_in_generation = 10
-    retain_to_next_gen = 3

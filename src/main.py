@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.10
 
-import sys, random
+import random, argparse
 
 from Runners import TestSuite, Test
 from Generators import RootGen
@@ -8,13 +8,23 @@ from Config import Config
 import ProcDriver as proc
 
 if __name__ == '__main__':
-    _, seed = sys.argv
-    random.seed(seed)
+    parser =  argparse.ArgumentParser('rv-pytorture')
+    parser.add_argument('-s', '--seed', type=int)
+    parser.add_argument('-g', '--generations', type=int, default=10)
+    parser.add_argument('-i', '--tests-in-generation', type=int, default=10)
+    parser.add_argument('-r', '--retained-tests-from-generation', type=int, default=1)
+    parser.add_argument('-v', '--verbose', action='store_true') 
 
-    generations = Config.generations
-    tests_in_generation = Config.tests_in_generation
-    retain_to_next_gen = Config.retain_to_next_gen
+    args = parser.parse_args()
 
+    random.seed(args.seed)
+
+    generations = args.generations
+    tests_in_generation = args.tests_in_generation
+    retain_to_next_gen = args.retained_tests_from_generation
+
+    Config.verbose = int(args.verbose)
+    
     proc.clean()
 
     suite = TestSuite([Test(RootGen) for _ in range(tests_in_generation)])
@@ -24,15 +34,10 @@ if __name__ == '__main__':
         suite.run()
         suite.retain_more_valuable(retain_to_next_gen)
 
-
         print(proc.get_total_rank())
-
-        print("Before: ", [tst.name for tst in suite.tests])
 
         for test in suite.tests:
             test.mutate_data()
-
-        print("After: ", [tst.name for tst in suite.tests])
 
         suite.tests.extend(
                 Test(RootGen) 
