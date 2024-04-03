@@ -30,7 +30,7 @@ class BranchGen:
         self.res = '''
         {branch_statement}
         {else_block}
-        j end{label} 
+        j end{label}
         {label}:
         {if_block}
         end{label}:
@@ -51,7 +51,7 @@ class LoopGen:
     def __init__(self, state: State):
         loop_counter_reg = state.random_reg(free=True, avoid_zeros=True)
         new_state = state.copy(
-                min_addr = state.min_addr + 1, 
+                min_addr = state.min_addr + 1,
                 loop_limit = state.loop_limit - 1,
                 free_regs = state.free_regs - set([loop_counter_reg])
             )
@@ -88,11 +88,11 @@ class FunctionDefGen:
                 min_addr = state.min_addr + 1,
                 max_addr = j_addr - 1,
                 free_regs = regs_for_func,
-            ) 
+            )
         cont_state = state.copy(
                 min_addr = j_addr + 1,
                 funcs = state.funcs + [(func_name, ra_reg, regs_for_func)],
-            ) 
+            )
 
         self.res = '''
         j end{label}
@@ -162,12 +162,12 @@ class RootGen:
         assert state.loop_limit >= 0
         if len(state.free_regs) > 2 and state.loop_limit != 0:
             generators.append(LoopGen)
-        
+
         if len(state.free_regs) >= 3 and any(ra in state.free_regs and func_regs <= state.free_regs for _, ra, func_regs in state.funcs) > 0:
             generators.append(FunctionCallGen)
 
         return [gen for gen in generators if gen.min_sz <= block_len]
-        
+
     def split(self, tl, tr):
         k = tr - tl
         res = [0]

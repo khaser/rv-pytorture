@@ -1,22 +1,19 @@
 { pkgs ? import <nixpkgs> {} }:
-let 
-  sw-toolchain = import ./toolchain.nix { inherit pkgs; };
+let
+  rv-toolchain = import ./toolchain.nix { inherit pkgs; };
 in
-pkgs.mkShell {
-  name = "RISC-V";
+pkgs.stdenv.mkDerivation {
+  name = "rv-pytorture";
 
-  nativeBuildInputs = with pkgs; [
-    sw-toolchain
+  buildInputs = with pkgs; [
+    # gcc, make and coreutils contained by default
+    rv-toolchain
     spike
     verilator
     dtc
     python310
-    (callPackage /etc/nixos/vim.nix { 
-      extraRC = ''
-        set tabstop=2
-        set shiftwidth=2
-        '';
-    })
   ];
+
+  src = ./.;
 }
 

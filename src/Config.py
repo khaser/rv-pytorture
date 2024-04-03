@@ -18,7 +18,7 @@ class Config:
         'seq': 1,
         'branch': 1,
         'loop': 3,
-        'func_def': 1, 
+        'func_def': 1,
         'func_call': 3
     }
 

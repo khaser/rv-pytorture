@@ -1,5 +1,8 @@
-PROC_DIR = proc
-ENTRYPOINT := src/main.py 
+# That file used for simple adaptation rv-pytorture for other cores and functional simulators.
+# It's enough to implement Driver.mk for other core/simulator with same semantics.
+
+PROC_DIR = scr1
+ENTRYPOINT := src/main.py
 EXE := rv_torture
 OUTPUT_DIR := $(PROC_DIR)/sim/tests/$(EXE)
 RTL_DIR := $(PROC_DIR)/build/AHB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0
@@ -11,7 +14,7 @@ OPTIONS := $(empty)
 
 TOOLCHAIN_PREFIX := riscv64-unknown-elf
 CC := $(TOOLCHAIN_PREFIX)-gcc
-PROG ?= 
+PROG ?=
 VERBOSE = 0
 
 ifeq ($(VERBOSE), 0)
@@ -19,8 +22,6 @@ ifeq ($(VERBOSE), 0)
 else
 	OPTIONAL_FD := &1
 endif
-
-default: run_suite
 
 verilated_model:
 	@$(MAKE) -C $(PROC_DIR) build_verilator 2>&1 1>$(OPTIONAL_FD)
@@ -60,26 +61,26 @@ get_coverage: | $(ANN_DIR)
 	@verilator_coverage -annotate $(ANN_DIR) $(RUNINFO_DIR)/*/coverage.dat
 
 $(TMP_DIR):
-	mkdir $(TMP_DIR)
+	@mkdir $(TMP_DIR)
 
 $(RUNINFO_DIR):
-	mkdir $(RUNINFO_DIR)
+	@mkdir $(RUNINFO_DIR)
 
 $(ANN_DIR):
-	mkdir $(ANN_DIR)
+	@mkdir $(ANN_DIR)
 
 rm_tmp:
-	@rm -rf $(TMP_DIR)/* 
+	@rm -rf $(TMP_DIR)/*
 
-get_tmp:
+get_tmp: $(TMP_DIR)
 	@echo $(TMP_DIR)
 
 rm_results:
 	@rm -rf $(RUNINFO_DIR)/*
 
-
-clean: rm_tmp
+clean:
 	$(MAKE) -C $(PROC_DIR) clean
 	@rm -rf $(TMP_DIR) $(RUNINFO_DIR) $(ANN_DIR)
 
-.phony: default clean verilated_model get_rank get_total_rank get_tmp rm_tmp rm_results
+
+.phony: clean verilated_model get_rank get_total_rank get_tmp rm_tmp rm_results

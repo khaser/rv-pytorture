@@ -13,7 +13,7 @@ if __name__ == '__main__':
     parser.add_argument('-g', '--generations', type=int, default=10)
     parser.add_argument('-i', '--tests-in-generation', type=int, default=10)
     parser.add_argument('-r', '--retained-tests-from-generation', type=int, default=1)
-    parser.add_argument('-v', '--verbose', action='store_true') 
+    parser.add_argument('-v', '--verbose', action='store_true')
 
     args = parser.parse_args()
 
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     retain_to_next_gen = args.retained_tests_from_generation
 
     Config.verbose = int(args.verbose)
-    
+
     proc.clean()
 
     suite = TestSuite([Test(RootGen) for _ in range(tests_in_generation)])
@@ -40,8 +40,8 @@ if __name__ == '__main__':
             test.mutate_data()
 
         suite.tests.extend(
-                Test(RootGen) 
+                Test(RootGen)
                 for _ in range(tests_in_generation - retain_to_next_gen)
-            ) 
+            )
 
     print(proc.get_coverage())

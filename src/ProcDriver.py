@@ -25,7 +25,7 @@ def run_test(name, text):
     filename = os.path.join(_get_tmp_dirname(), f"{name}.S")
     print(text, file=open(filename, "w+"))
 
-    proc = subprocess.run(f"make -s VERBOSE={Config.verbose} PROG={name} run", shell = True)
+    proc = subprocess.run(f"make -f Driver.mk -s VERBOSE={Config.verbose} PROG={name} run", shell = True)
     if proc.returncode != 0:
         print(f"Signatures differ, test name: {name}")
         exit(0)
@@ -40,5 +40,5 @@ def _get_tmp_dirname():
     return _run("get_tmp").strip()
 
 def _run(cmd):
-    proc = subprocess.run(f"make {cmd}", shell = True, stdout = subprocess.PIPE)
+    proc = subprocess.run(f"make -f Driver.mk {cmd}", shell = True, stdout = subprocess.PIPE)
     return proc.stdout.decode("utf-8")

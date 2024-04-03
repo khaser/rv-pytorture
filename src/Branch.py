@@ -1,6 +1,6 @@
-import random 
+import random
 
-class BranchCommand: 
+class BranchCommand:
     def __init__(self, addr_off, state):
         self.addr_off = addr_off
         self.cmd = random.choice(["beq", "bne", "blt", "bge", "bltu", "bgeu"])

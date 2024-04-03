@@ -1,7 +1,7 @@
 from Abstract import *
-import random 
+import random
 
-class ALUCommand(AbstractCommandType): 
+class ALUCommand(AbstractCommandType):
     prefix = "xalu"
 
 class ALURtype(ALUCommand):
@@ -31,7 +31,7 @@ class ALUItype(ALUCommand):
             shift_imm += 1
 
         self.cmd = random.choice(cmd + shifts + short_shifts)
-        self.dest, self.src = state.random_reg(free=True), state.random_reg() 
+        self.dest, self.src = state.random_reg(free=True), state.random_reg()
 
         imm_sz = -1
         if self.cmd in shifts:
