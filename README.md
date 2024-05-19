@@ -50,4 +50,4 @@ Now, we use verilator coverage info to estimate each test
 value. But it can be changed easily in Driver.mk, in case it
 doesn't covers the area of interest.
 
-More information you can read in my [thesis on russian](https://drive.google.com/file/d/15URk5rUfiEUEDN2HT2MGECQ6QClPO7WB/view?usp=sharing).
+More information you can read in my [thesis in russian](https://drive.google.com/file/d/15URk5rUfiEUEDN2HT2MGECQ6QClPO7WB/view?usp=sharing).
